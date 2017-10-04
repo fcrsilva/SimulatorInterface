@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta http-equiv='Cache-Control'
+	content='no-cache, no-store, must-revalidate' />
+<meta http-equiv='Pragma' content='no-cache' />
+<meta http-equiv='Expires' content='0' />
+<title>Sentiment Home Page</title>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel='stylesheet' href='styles/index.css'>
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js'></script>
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+</head>
+<body>
+	<div id="help" style="float: right;margin-right:30px;"><i id="question_mark" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="Help" class="fa fa-question-circle fa-2x" aria-hidden="true" onclick="start_tutorial();"></i></div>
+	<div id="tutorial_box" style="z-index:500;position:absolute;display:none;background-color: white;width:300px;box-shadow: 2px 2px 5px 2px rgba(0, 0, 0, .2);padding-bottom:10px;">
+		<nav class="navbar navbar-fixed-top navbar-light"
+			style="background-color: #604460;">
+			<center>
+			<span class="navbar-text" style="color:white;text-align:center;">
+				<b>TUTORIAL</b>
+			</span>
+		</center>
+		</nav>
+		<div id="tutorial" style="padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px;">
+		</div>
+	</div>
+	<div class="dropdown" id="dropdown">
+		<button onclick="myFunction()" class="dropbtn">Role</button>
+		<div id="myDropdown" class="dropdown-content">
+
+			<a href="index.html?amp;role_desc=DESIGNER">Designer PSS</a> <a
+				href="index.html?amp;role_desc=SYS_ENG">PLM System Engineer</a> <a
+				href="index.html?amp;role_desc=CONF_MAN">PLM Configuration
+				Manager</a> <a href="index.html?amp;role_desc=PROD_MAN">Product
+				Manufacturer</a> <a href="index.html?amp;role_desc=ADMIN">System
+				Administrator</a>
+
+		</div>
+	</div>
+
+
+	<h1>Sentiment Analysis</h1>
+	<div id="overlay-back" style="display: none"></div>
+	<div id="overlay" style="display: none">
+		<span>
+			<div id="alert" style="padding-top:60px;">
+			</div>
+		</span>
+	</div>
+	<center>
+		<div class="container" id="container">
+			<h2>Options</h2>
+			<div class="row">
+				<div class="col-sm-4 offset-0">
+					<div class="container"
+						style="padding-left: 0; padding-right: 0; background-color: '#E2D6E2';"
+						id="define">
+						<nav class="navbar navbar-fixed-top navbar-light"
+							style="background-color: #604460;"id=_define>
+							<span class="navbar-text">
+								<h3>DEFINE</h3>
+							</span>
+						</nav>
+						<div class="row" id="create" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="Create a new opinion model" style="display: none">
+							<div class="col-sm-8 offset-0">
+								<a onClick="new_model();" href="models.html"
+									style="cursor: pointer; cursor: hand;">Create Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a onClick="new_model();" href="models.html"><img
+									src="..\images\icons\button_add.png" onClick="new_model();"></a>
+							</div>
+						</div>
+						<div class="row" id="create_gray">
+							<div class="col-sm-8 offset-0">
+								<a style="cursor: pointer; cursor: hand; color: #BBBBBB;">Create
+									Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_add_gray.png"></a>
+							</div>
+						</div>
+						<div class="row" id="view" style="display: none" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="View an existing opinion model">
+							<div class="col-sm-8 offset-0">
+								<a onClick="viewModels('view');"
+									style="cursor: pointer; cursor: hand;">View Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a onClick="viewModels('view');"
+									style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_view.png"></a>
+							</div>
+						</div>
+						<div class="row" id="view_gray">
+							<div class="col-sm-8 offset-0">
+								<a style="cursor: pointer; cursor: hand; color: #BBBBBB">View
+									Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_view_gray.png"></a>
+							</div>
+						</div>
+						<div class="row" id="edit" style="display: none" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="Edit an existing opinion model">
+							<div class="col-sm-8 offset-0">
+								<a onClick="viewModels('edit');"
+									style="cursor: pointer; cursor: hand;">Edit Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a onClick="viewModels('edit');"
+									style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_edit.png"></a>
+							</div>
+						</div>
+						<div class="row" id="edit_gray">
+							<div class="col-sm-8 offset-0">
+								<a style="cursor: pointer; cursor: hand; color: #BBBBBB">Edit
+									Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_edit_gray.png"></a>
+							</div>
+						</div>
+						<div class="row" id="delete" style="display: none" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="Delete an existing opinion model">
+							<div class="col-sm-8 offset-0">
+								<a onClick="viewModels('delete');"
+									style="cursor: pointer; cursor: hand;">Delete Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a onClick="viewModels('delete');"
+									style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_delete.png"></a>
+							</div>
+						</div>
+						<div class="row" id="delete_gray">
+							<div class="col-sm-8 offset-0">
+								<a style="cursor: pointer; cursor: hand; color: #BBBBBB">Delete
+									Opinion Model</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a style="cursor: pointer; cursor: hand;"><img
+									src="..\images\icons\button_delete_gray.png"></a>
+							</div>
+						</div>
+						<div class="row" id="view_models" style="display: none;">
+							<pstyle:'text-align:left;'>
+								Select Model: <br>
+								<select id='Models'>
+								</select> <br>
+							<form action='models.html'>
+								<input id='view_back' formaction="" class='btn btn-default'
+									onclick='viewModels(false);' type='submit' value='Back' /> <input
+									id='view_edit' class='btn btn-default' onclick='setCookie()'
+									type='submit' value='Edit Model' /> <input id='view_delete'
+									class='btn btn-default' formaction="" ; onclick='deleteModel()'
+									 value='Delete Model' /> <input id='view_select'
+									class='btn btn-default' formaction="models.html"
+									onclick='viewModel();setCookie();' type='submit'
+									value='View Model' />
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-4 offset-0">
+					<div class="container"
+						style="padding-left: 0; padding-right: 0; background-color: '#E2D6E2'; display: none;"
+						id="_view">
+						<nav class="navbar navbar-fixed-top navbar-light"
+							style="background-color: #604460;">
+							<span class="navbar-text">
+								<h3>VIEW</h3>
+							</span>
+						</nav>
+					</div>
+					<div class="container"
+						style="padding-left: 0; padding-right: 0; background-color: '#E2D6E2';"
+						id="_view_gray">
+						<nav class="navbar navbar-fixed-top navbar-light"
+							style="background-color: #666666;">
+							<span class="navbar-text">
+								<h3>VIEW</h3>
+							</span>
+						</nav>
+					</div>
+				</div>
+				<div class="col-sm-4 offset-0">
+					<div class="container"
+						style="padding-left: 0; padding-right: 0; background-color: '#E2D6E2'; display: none;"
+						id="predict">
+						<nav class="navbar navbar-fixed-top navbar-light"
+							style="background-color: #604460;">
+							<span class="navbar-text">
+								<h3>PREDICT</h3>
+							</span>
+						</nav>
+						<div class="row" id="create_prediction" style="display: none" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="Generate a prediction based on a set of products and services">
+							<div class="col-sm-8 offset-0">
+								<a href="prediction_settings.html"
+									style="cursor: pointer; cursor: hand;">Generate Prediction</a>
+							</div>
+							<div class="col-sm-4 offset-0">
+								<a href="prediction_settings.html"><img
+									src="..\images\icons\button_add.png"></a>
+							</div>
+						</div>
+					</div>
+					<div class="container"
+						style="padding-left: 0; padding-right: 0; background-color: '#E2D6E2';"
+						id="predict_gray">
+						<nav class="navbar navbar-fixed-top navbar-light"
+							style="background-color: #666666;">
+							<span class="navbar-text">
+								<h3>PREDICT</h3>
+							</span>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<h2 id="chart_title">Top 5 PSS Sentiment</h2>
+			<div style="width: 60%; text-align:right;margin-bottom:0;padding-bottom:0;">
+				<a href="chart_setup.html" data-toggle="tooltip" data-delay='{"show":"1000", "hide":"500"}' data-placement="auto" title="Edit chart settings"><i class="fa fa-cog" aria-hidden="true"></i> Chart setup </a>
+			</div>
+			<div id="dashboard">
+				<div class="container" style="box-shadow: none;margin-top:0;padding-top:0;" id="top5"></div>
+				<div id="control" style="margin-bottom: 20px; padding-bottom:0;height:70px;"></div>
+			</div>
+		</div>
+	</center>
+
+	<!--
+	<center>
+		<img src='../images/Diversity-Logo-120x62.png' alt='Diversity Logo'
+			align='top'>
+
+		<!--Lista de PSS
+		<div id='pss'>
+			<label>Choose Model:</label> <select id='Models'>
+			</select><form action='models.html'>
+					<input id='create_model' class='btn btn-default' onclick='new_model();'
+						type='submit' value='Create Model' />
+					<input id='edit_model' class='btn btn-default' onclick='setCookie();'
+						type='submit' value='Edit Model' />
+				</form>
+		</div>
+
+		<!--Top5 PSS Global Sentiment
+		<div id='top5'></div>
+
+		<!-- Botões opcionais
+		<table></table>
+		<table id='buttons'>
+		<td>
+				<form action='chart_setup.html'>
+					<input id='setup' class='btn btn-default' onclick=''
+						type='submit' value='Chart Setup' />
+				</form>
+			</td>
+			<td>
+				<form action='opinion_extraction_page.html'>
+					<input id='global' class='btn btn-default' onclick='setCookie();'
+						type='submit' value='Get Opinion Extraction' />
+				</form>
+			</td>
+			<!--<td>
+				<form action='opinion_extraction_page.html'>
+					<input id='global' class='btn btn-default' onclick='setCookie();'
+						type='submit' value='Get Opinion' />
+				</form>
+			</td>
+			<td>
+				<form action='global_sentiment_page.html'>
+					<input id='global' class='btn btn-default' onclick='setCookie();'
+						type='submit' value='Get Global Sentiment' />
+				</form>
+			</td>
+			<td>
+				<form>
+					<input id='refresh' class='btn btn-default' type=button
+						value='Refresh' onClick='refreshDB(1)'>
+				</form>
+			</td>
+		</table>
+	</center>
+-->
+
+<script type='text/javascript' src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script>
+<script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
+<script type='text/javascript' src ='scripts/index.js'></script>
+</body>
