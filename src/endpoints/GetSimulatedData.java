@@ -71,7 +71,7 @@ public class GetSimulatedData {
 				post.put("gender", rs.getString("gender"));
 				post.put("url", "");
 				post.put("imgUrl", "");
-				post.put("userId", rs.getString("user_id"));
+				post.put("userId", rs.getLong("user_id"));
 				post.put("Fname", rs.getString("name"));
 				post.put("age", rs.getLong("age"));
 
@@ -97,7 +97,7 @@ public class GetSimulatedData {
 					reply.put("gender", rs.getString("gender"));
 					reply.put("url", "");
 					reply.put("imgUrl", "");
-					reply.put("userId", rs.getString("user_id"));
+					reply.put("userId", rs.getLong("user_id"));
 					reply.put("Fname", rs.getString("name"));
 					reply.put("age", rs.getLong("age"));
 
