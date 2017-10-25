@@ -8,12 +8,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -23,17 +26,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.media.jfxmedia.logging.Logger;
+
 @Path("/getSimulatedData")
 public class GetSimulatedData {
-	@DefaultValue("")
-	@QueryParam("accounts[]")
-	String accounts;
+
 	@Context
 	UriInfo ui;
 	private static DataSource condata = null;
 	public static final String err_unknown = "ERROR ";
 	public static final String err_dbconnect = "Cannot connect to database Please Try Again Later.";
 	public static final String err_cr = "Cannot connect to common repository";
+	private List<String> epochsTo;
+	private List<String> epochsFrom;
+	private List<String> accounts;
+	private List<String> accounts_SIM = new ArrayList<>();
+	private List<String> accounts_IS = new ArrayList<>();
+	private long pssId = -1;
+	private String pssName = "";
 
 	/**
 	 * Builds a matrix where the rows are all the rules in the selected design
@@ -47,17 +57,19 @@ public class GetSimulatedData {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public Response welcome() throws JSONException, SQLException {
-		if ("".equals(accounts))
+		MultivaluedMap<String, String> params = ui.getQueryParameters();
+		if (!verifyparams(params))
 			return Response.status(Response.Status.BAD_REQUEST).build();
+		splitaccounts();
 		String query = "SELECT post.*, `user`.age, `user`.gender, `user`.name,`user`.location FROM sentimentposts.post inner join sentimentposts.user on sentimentposts.post.user_id=sentimentposts.user.id and sentimentposts.post.product in (";
 
-		String[] account = accounts.split(",");
-		for (int i = 0; i < account.length; i++)
+		int size = accounts_SIM.size();
+		for (int i = 0; i < size; i++)
 			query += "?,";
 		query = query.substring(0, query.length() - 1) + ") ";
 
 		query += "order by post.id ASC";
-		System.out.print(accounts);
+		System.out.print(accounts_SIM);
 		JSONArray result = new JSONArray();
 		JSONObject post;
 		JSONArray replies;
@@ -68,8 +80,8 @@ public class GetSimulatedData {
 		long replyid;
 		try (Connection cndata = connlocal(); PreparedStatement stmt = cndata.prepareStatement(query);) {
 
-			for (int i = 0; i < account.length; i++)
-				stmt.setString(i + 1, account[i]);
+			for (int i = 0; i < size; i++)
+				stmt.setString(i + 1, accounts_SIM.get(i));
 
 			try (ResultSet rs = stmt.executeQuery()) {
 
@@ -142,6 +154,57 @@ public class GetSimulatedData {
 			e.printStackTrace();
 		}
 		return Response.status(Response.Status.OK).entity(result.toString()).build();
+
+	}
+
+	private void splitaccounts() {
+		List<String> SIM_accounts = new ArrayList<String>();
+
+		try (Connection cnlocal = connlocal();
+				Statement stmt = cnlocal.createStatement();
+				ResultSet rs = stmt.executeQuery(("Select distinct(product) from post"));) {
+			while (rs.next())
+				SIM_accounts.add(rs.getString(1));
+
+		} catch (ClassNotFoundException | SQLException e) {
+			System.out.println("ERROR ON SPLIT ACCOUNTS");
+		}
+
+		for (String account : accounts) {
+			if (SIM_accounts.contains(account)) {
+				accounts_SIM.add(account);
+			} else {
+				accounts_IS.add(account);
+			}
+
+		}
+
+		System.out.println("RESQUEST TO LOCAL:=> " + accounts_SIM);
+		System.out.println("/n/r Request to IS:=> " + accounts_IS);
+	}
+
+	private boolean verifyparams(MultivaluedMap<String, String> params) {
+		if (params.get("accounts[]") == null)
+			return false;
+		if (params.get("epochsTo[]") == null)
+			return false;
+		if (params.get("epochsFrom[]") == null)
+			return false;
+		if (params.get("pssId") != null)
+			pssId = Long.parseLong(params.getFirst("pssId"));
+		if (params.get("pssName") != null)
+			pssName = params.getFirst("pssName");
+
+		accounts = params.get("accounts[]");
+		epochsTo = params.get("epochsTo[]");
+		epochsFrom = params.get("epochsFrom[]");
+
+		if (epochsTo.size() != epochsFrom.size())
+			return false;
+		if (accounts.size() != epochsTo.size())
+			return false;
+
+		return true;
 
 	}
 
