@@ -1,5 +1,8 @@
 package endpoints;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,6 +43,10 @@ public class GetSimulatedData {
 	public static final String err_cr = "Cannot connect to common repository";
 	private List<String> epochsTo;
 	private List<String> epochsFrom;
+	private List<String> epochsTo_SIM = new ArrayList<>();
+	private List<String> epochsTo_IS = new ArrayList<>();
+	private List<String> epochsFrom_IS = new ArrayList<>();
+	private List<String> epochsFrom_SIM = new ArrayList<>();
 	private List<String> accounts;
 	private List<String> accounts_SIM = new ArrayList<>();
 	private List<String> accounts_IS = new ArrayList<>();
@@ -72,10 +79,10 @@ public class GetSimulatedData {
 		}
 		// query = query.substring(0, query.length() - 1) + ") ";
 		query += ") order by post.id ASC";
-		//System.out.println(accounts_SIM);
-		//System.out.println(epochsFrom);
-		//System.out.println(epochsTo);
-		//System.out.println(query);
+		System.out.println(accounts_SIM);
+		System.out.println(epochsFrom);
+		System.out.println(epochsTo);
+		System.out.println(query);
 
 		JSONArray result = new JSONArray();
 		JSONObject post;
@@ -91,12 +98,12 @@ public class GetSimulatedData {
 			int j=1;
 			for (int i = 0; i < size; i++) {
 				stmt.setString(j++, accounts_SIM.get(i));
-				dateFrom.setTime(Long.parseLong(epochsFrom.get(i)));
+				dateFrom.setTime(Long.parseLong(epochsFrom_SIM.get(i)));
 				stmt.setString(j++, df.format(dateFrom));
-				dateTo.setTime(Long.parseLong(epochsTo.get(i)));
+				dateTo.setTime(Long.parseLong(epochsTo_SIM.get(i)));
 				stmt.setString(j++, df.format(dateTo));
 			}
-			//System.out.println(stmt.toString());
+			System.out.println(stmt.toString());
 			try (ResultSet rs = stmt.executeQuery()) {
 
 				if (rs.isClosed())
@@ -163,6 +170,16 @@ public class GetSimulatedData {
 					result.put(post);
 				}
 			}
+			if(accounts_IS.size()>0) {
+			String request = "http://opennebula.euprojects.net:8922/intelligent-search/getFeedback?";
+			for(int i =0; i<accounts_IS.size();i++)
+				request+="&epochsFrom[]="+epochsFrom_IS.get(i)+"&epochsFrom[]="+epochsTo_IS.get(i)+"&pssId=1&accounts[]="+accounts_IS.get(i);
+			System.out.println(request);
+		JSONArray ISdata = new JSONArray(readUrl(request));
+			for (int i = 0; i < ISdata.length(); i++) {
+		        result.put(ISdata.get(i));
+		    }
+			}
 		} catch (Exception e) {
 			System.out.println("ERROR3");
 			e.printStackTrace();
@@ -184,11 +201,16 @@ public class GetSimulatedData {
 			System.out.println("ERROR ON SPLIT ACCOUNTS");
 		}
 
-		for (String account : accounts) {
-			if (SIM_accounts.contains(account)) {
-				accounts_SIM.add(account);
+		for (int i=0; i<accounts.size();i++) {
+			if (SIM_accounts.contains(accounts.get(i))) {
+				accounts_SIM.add(accounts.get(i));
+				epochsFrom_SIM.add(epochsFrom.get(i));
+				epochsTo_SIM.add(epochsTo.get(i));
+				
 			} else {
-				accounts_IS.add(account);
+				accounts_IS.add(accounts.get(i));
+				epochsFrom_IS.add(epochsFrom.get(i));
+				epochsTo_IS.add(epochsTo.get(i));
 			}
 
 		}
@@ -248,6 +270,25 @@ public class GetSimulatedData {
 		} catch (Exception e) {
 			System.out.println(err_dbconnect);
 			return null;
+		}
+	}
+	
+	public static String readUrl(String urlString) throws Exception {
+		BufferedReader reader = null;
+		try {
+			URL url = new URL(urlString);
+			// System.out.println("URL:" + url.toString());
+			reader = new BufferedReader(new InputStreamReader(url.openStream()));
+			StringBuffer buffer = new StringBuffer();
+			int read;
+			char[] chars = new char[1024];
+			while ((read = reader.read(chars)) != -1)
+				buffer.append(chars, 0, read);
+
+			return buffer.toString();
+		} finally {
+			if (reader != null)
+				reader.close();
 		}
 	}
 
