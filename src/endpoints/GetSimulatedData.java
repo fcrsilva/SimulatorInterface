@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,28 +62,41 @@ public class GetSimulatedData {
 		if (!verifyparams(params))
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		splitaccounts();
-		String query = "SELECT post.*, `user`.age, `user`.gender, `user`.name,`user`.location FROM sentimentposts.post inner join sentimentposts.user on sentimentposts.post.user_id=sentimentposts.user.id and sentimentposts.post.product in (";
+		String query = "SELECT post.*, `user`.age, `user`.gender, `user`.name,`user`.location FROM sentimentposts.post inner join sentimentposts.user on sentimentposts.post.user_id=sentimentposts.user.id and (sentimentposts.post.product in (";
 
 		int size = accounts_SIM.size();
-		for (int i = 0; i < size; i++)
-			query += "?,";
-		query = query.substring(0, query.length() - 1) + ") ";
+		for (int i = 0; i < size; i++) {
+			if (i != 0)
+				query += " or sentimentposts.post.product in (";
+			query += "?) and sentimentposts.post.timestamp>? and sentimentposts.post.timestamp<?";
+		}
+		// query = query.substring(0, query.length() - 1) + ") ";
+		query += ") order by post.id ASC";
+		//System.out.println(accounts_SIM);
+		//System.out.println(epochsFrom);
+		//System.out.println(epochsTo);
+		//System.out.println(query);
 
-		query += "order by post.id ASC";
-		System.out.print(accounts_SIM);
 		JSONArray result = new JSONArray();
 		JSONObject post;
 		JSONArray replies;
 		JSONObject reply;
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		java.util.Date date = null;
+		java.util.Date dateFrom = new Date(1);
+		java.util.Date dateTo = new Date(1);
 		long postid;
 		long replyid;
 		try (Connection cndata = connlocal(); PreparedStatement stmt = cndata.prepareStatement(query);) {
-
-			for (int i = 0; i < size; i++)
-				stmt.setString(i + 1, accounts_SIM.get(i));
-
+			int j=1;
+			for (int i = 0; i < size; i++) {
+				stmt.setString(j++, accounts_SIM.get(i));
+				dateFrom.setTime(Long.parseLong(epochsFrom.get(i)));
+				stmt.setString(j++, df.format(dateFrom));
+				dateTo.setTime(Long.parseLong(epochsTo.get(i)));
+				stmt.setString(j++, df.format(dateTo));
+			}
+			//System.out.println(stmt.toString());
 			try (ResultSet rs = stmt.executeQuery()) {
 
 				if (rs.isClosed())
