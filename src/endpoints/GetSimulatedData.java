@@ -173,7 +173,7 @@ public class GetSimulatedData {
 			if(accounts_IS.size()>0) {
 			String request = "http://opennebula.euprojects.net:8922/intelligent-search/getFeedback?";
 			for(int i =0; i<accounts_IS.size();i++)
-				request+="&epochsFrom[]="+epochsFrom_IS.get(i)+"&epochsFrom[]="+epochsTo_IS.get(i)+"&pssId=1&accounts[]="+accounts_IS.get(i);
+				request+="&epochsFrom[]="+epochsFrom_IS.get(i)+"&epochsTo[]="+epochsTo_IS.get(i)+"&pssId="+pssId+"&accounts[]="+accounts_IS.get(i);
 			System.out.println(request);
 		JSONArray ISdata = new JSONArray(readUrl(request));
 			for (int i = 0; i < ISdata.length(); i++) {
